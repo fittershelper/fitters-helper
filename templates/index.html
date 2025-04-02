@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Fitter's Helper</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            background: black;
+            color: #e3a72f;
+            font-family: sans-serif;
+            padding: 20px;
+            text-align: center;
+        }
+        select, button, textarea {
+            font-size: 18px;
+            padding: 8px;
+            margin: 5px;
+        }
+        .group {
+            margin-bottom: 25px;
+        }
+        h2 {
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Logo -->
+    <img src="{{ url_for('static', filename='fitters_helper_logo.png') }}" alt="Fitter's Helper Logo"
+         style="max-width: 400px; display: block; margin: 0 auto 8px;">
+
+    <!-- Calculator Form -->
+    <form id="calc-form">
+   <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 30px; margin-bottom: 20px;">
+
+    <!-- Fitting 1 -->
+    <div style="display: flex; flex-direction: column; align-items: center;">
+        <h2 style="margin-bottom: 10px;">Fitting 1</h2>
+
+        <label for="a_num" style="font-size: 14px; color: #aaa; margin-bottom: 4px;">Whole Inches</label>
+        <select name="a_num" id="a_num" style="min-width: 120px;">
+            <option value="">--</option>
+            {% for num in nums %}
+            <option value="{{ num }}" {% if selected.a_num == num %}selected{% endif %}>{{ num }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="a_frac" style="font-size: 14px; color: #aaa; margin-top: 10px; margin-bottom: 4px;">Fractional Inches</label>
+        <select name="a_frac" id="a_frac" style="min-width: 120px;">
+            <option value="">--</option>
+            {% for frac in fracs %}
+            <option value="{{ frac }}" {% if selected.a_frac == frac %}selected{% endif %}>{{ frac }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Fitting 2 -->
+    <div style="display: flex; flex-direction: column; align-items: center;">
+        <h2 style="margin-bottom: 10px;">Fitting 2</h2>
+
+        <label for="b_num" style="font-size: 14px; color: #aaa; margin-bottom: 4px;">Whole Inches</label>
+        <select name="b_num" id="b_num" style="min-width: 120px;">
+            <option value="">--</option>
+            {% for num in nums %}
+            <option value="{{ num }}" {% if selected.b_num == num %}selected{% endif %}>{{ num }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="b_frac" style="font-size: 14px; color: #aaa; margin-top: 10px; margin-bottom: 4px;">Fractional Inches</label>
+        <select name="b_frac" id="b_frac" style="min-width: 120px;">
+            <option value="">--</option>
+            {% for frac in fracs %}
+            <option value="{{ frac }}" {% if selected.b_frac == frac %}selected{% endif %}>{{ frac }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Pup Piece -->
+    <div style="display: flex; flex-direction: column; align-items: center;">
+        <h2 style="margin-bottom: 10px;">Pup Piece</h2>
+
+        <label for="c_num" style="font-size: 14px; color: #aaa; margin-bottom: 4px;">Whole Inches</label>
+        <select name="c_num" id="c_num" style="min-width: 120px;">
+            <option value="">--</option>
+            {% for num in nums %}
+            <option value="{{ num }}" {% if selected.c_num == num %}selected{% endif %}>{{ num }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="c_frac" style="font-size: 14px; color: #aaa; margin-top: 10px; margin-bottom: 4px;">Fractional Inches</label>
+        <select name="c_frac" id="c_frac" style="min-width: 120px;">
+            <option value="">--</option>
+            {% for frac in fracs %}
+            <option value="{{ frac }}" {% if selected.c_frac == frac %}selected{% endif %}>{{ frac }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+</div>
+
+
+    <button type="submit">Calculate</button>
+</form>
+
+    <!-- Result Display -->
+<div style="margin: 30px 0;">
+    <div style="font-size: 16px; color: #aaa;">Your Calculated Results:</div>
+    <div id="result-box" style="
+        display: none;
+        background-color: #111;
+        border-left: 6px solid #e3a72f;
+        padding: 20px;
+        margin-top: 10px;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+        box-shadow: 0 0 10px rgba(227, 167, 47, 0.2);
+        line-height: 1.6;
+    ">
+        <div id="offset-result"></div>
+        <div id="takeout-result" style="margin-top: 10px;"></div>
+    </div>
+</div>
+
+
+    <!-- History Log -->
+    <h2>History</h2>
+    <div id="history-log" style="max-height: 200px; overflow-y: auto; text-align: left; padding: 10px; border: 1px solid #e3a72f; margin: 10px auto; width: 90%;"></div>
+
+    <!-- Notepad -->
+    <h2>Notepad</h2>
+    <textarea id="notes" rows="6" style="width: 90%; font-size: 16px; padding: 10px;"></textarea>
+    <br>
+    <button type="button" onclick="clearNotes()">Clear Notes</button>
+
+    <!-- Script -->
+    <script>
+    document.getElementById("calc-form").addEventListener("submit", function(e) {
+        e.preventDefault();
+
+        const data = {
+            a_num: document.getElementById("a_num").value,
+            a_frac: document.getElementById("a_frac").value,
+            b_num: document.getElementById("b_num").value,
+            b_frac: document.getElementById("b_frac").value,
+            c_num: document.getElementById("c_num").value,
+            c_frac: document.getElementById("c_frac").value
+        };
+
+        fetch("/calculate", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(result => {
+            const offset = result.offset || "—";
+            const takeout = result.takeout || "—";
+
+document.getElementById("result-box").style.display = "block";
+
+document.getElementById("offset-result").innerHTML =
+    `<span style="font-size: 22px; color:#aaa;">Offset:</span> <span style="font-size: 32px; font-weight: bold; color: #e3a72f;">${offset}"</span>`;
+
+document.getElementById("takeout-result").innerHTML =
+    `<span style="font-size: 22px; color:#aaa;">Takeout:</span> <span style="font-size: 32px; font-weight: bold; color: #e3a72f;">${takeout}"</span>`;
+
+
+            const formatInches = (num, frac) => {
+                const n = num || "0";
+                const f = frac ? ` ${frac}` : "";
+                return `${n}${f}"`;
+            };
+
+            const a = formatInches(data.a_num, data.a_frac);
+            const b = formatInches(data.b_num, data.b_frac);
+            const c = formatInches(data.c_num, data.c_frac);
+
+            const log = document.getElementById("history-log");
+            const entry = document.createElement("div");
+            entry.innerHTML = `
+    <div style="padding: 12px 0; border-bottom: 1px dotted #e3a72f; margin-bottom: 12px; line-height: 1.6;">
+        <div><span style="color:#aaa;">Fitting 1:</span> <strong>${a}</strong></div>
+        <div><span style="color:#aaa;">Fitting 2:</span> <strong>${b}</strong></div>
+        <div><span style="color:#aaa;">Pup Piece:</span> <strong>${c}</strong></div>
+        <div style="margin-top: 8px;">
+            <span style="color:#aaa;">Offset:</span> <span style="font-size: 20px; font-weight: bold;">${offset}"</span><br>
+            <span style="color:#aaa;">Takeout:</span> <span style="font-size: 20px; font-weight: bold;">${takeout}"</span>
+        </div>
+    </div>
+`;
+
+            log.prepend(entry);
+        })
+        .catch(err => {
+            document.getElementById("offset-result").textContent = "Offset: Error";
+            document.getElementById("takeout-result").textContent = "Takeout: Check inputs";
+        });
+    });
+
+    function clearNotes() {
+        document.getElementById("notes").value = "";
+    }
+    </script>
+
+</body>
+</html>
